@@ -60,12 +60,16 @@ class Simulation:
             if random.random() < 0.1:  # 10% chance to perform an organization action
                 action = random.choice(["create", "join", "leave", "change_leader"])
                 if action == "create" and len(self.creatures) > 1 and len(self.structures) > 0 and not creature.leading_organization:
-                    other_member = random.choice([c for c in self.creatures if c != creature and not c.leading_organization])
-                    structure = random.choice(self.structures)
-                    new_org = creature.create_organization(f"{creature.name}'s Group", other_member, structure)
-                    if new_org:
-                        self.organizations.append(new_org)
-                        print(f"{creature.name} created a new organization: {new_org.name}")
+                    eligible_members = [c for c in self.creatures if c != creature and not c.leading_organization]
+                    if eligible_members:
+                        other_member = random.choice(eligible_members)
+                        structure = random.choice(self.structures)
+                        new_org = creature.create_organization(f"{creature.name}'s Group", other_member, structure)
+                        if new_org:
+                            self.organizations.append(new_org)
+                            print(f"{creature.name} created a new organization: {new_org.name}")
+                    else:
+                        print(f"{creature.name} tried to create an organization, but there were no eligible members")
                 elif action == "join" and self.organizations:
                     org_to_join = random.choice(self.organizations)
                     if org_to_join.add_member(creature):
@@ -79,7 +83,10 @@ class Simulation:
                 elif action == "change_leader" and creature.leading_organization:
                     org = creature.leading_organization
                     if org.choose_new_leader():
-                        print(f"{org.leader.name} became the new leader of {org.name}")
+                        if org.leader:
+                            print(f"{org.leader.name} became the new leader of {org.name}")
+                        else:
+                            print(f"Leadership of {org.name} is currently vacant")
                     else:
                         print(f"No suitable new leader found for {org.name}")
 
@@ -97,7 +104,7 @@ class Simulation:
         print("Organizations:")
         for organization in self.organizations:
             print(f"  - {organization}")
-            print(f"    Leader: {organization.leader.name} (Days in charge: {organization.leader_days_in_charge})")
+            print(f"    Leader: {organization.leader.name if organization.leader else 'None'} (Days in charge: {organization.leader_days_in_charge})")
             print(f"    Members: {', '.join(creature.name for creature in organization.creatures)}")
             print(f"    Meeting Place: {organization.meeting_place.name if organization.meeting_place else 'None'}")
         print()

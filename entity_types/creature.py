@@ -37,6 +37,7 @@ class Creature:
     def stop_leading_organization(self, organization: 'Organization') -> None:
         if self.leading_organization == organization:
             self.leading_organization = None
+            organization.leader = None
 
     def create_organization(self, name: str, other_member: 'Creature', structure: 'Structure') -> 'Organization':
         from .organization import Organization

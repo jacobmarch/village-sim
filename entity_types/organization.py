@@ -6,69 +6,65 @@ if TYPE_CHECKING:
     from .structure import Structure
 
 class Organization:
-    def __init__(self, name: str, leader: 'Creature', members: List['Creature'] = None, structures: List['Structure'] = None) -> None:
+    def __init__(self, name: str, leader: 'Creature', members: List['Creature'], structures: List['Structure']) -> None:
         self.name = name
-        self.leader: 'Creature' = leader
-        self.creatures: List['Creature'] = [leader] + [m for m in members if m != leader]
-        self.structures: List['Structure'] = structures
-        self.meeting_place: Optional['Structure'] = structures[0] if structures else None
         self.days_existed: int = 0
-        self.leader_days_in_charge: int = 0
+        self.leader = leader
+        self.creatures: List['Creature'] = members  # Ensure this is a flat list
+        self.structures = structures  # Initialize structures
+        self.meeting_place = structures[0] if structures else None  # Initialize meeting_place
+        self.leader_days_in_charge = 0  # Initialize leader_days_in_charge
+
+    def update(self):
+        self.leader_days_in_charge += 1
 
     def add_member(self, creature: 'Creature') -> bool:
         if creature not in self.creatures:
-            self.creatures.append(creature)
-            creature.join_organization(self)
+            self.creatures.append(creature)  # Append individual Creature instances
             return True
         return False
 
-    def remove_member(self, creature: 'Creature') -> None:
+    def remove_member(self, creature: 'Creature') -> bool:
         if creature in self.creatures:
             self.creatures.remove(creature)
-            creature.leave_organization(self)
             if creature == self.leader:
-                self.choose_new_leader()
-
-    def change_leader(self, new_leader: 'Creature') -> bool:
-        if new_leader in self.creatures and new_leader != self.leader and not new_leader.leading_organization:
-            old_leader = self.leader
-            self.leader = new_leader
-            self.leader_days_in_charge = 0
-            if old_leader:
-                old_leader.stop_leading_organization(self)
-            new_leader.start_leading_organization(self)
+                self.leader = None
+                self.leader_days_in_charge = 0
             return True
         return False
 
-    def choose_new_leader(self) -> bool:
-        potential_leaders = [c for c in self.creatures if c != self.leader and not c.leading_organization]
-        if potential_leaders:
-            new_leader = random.choice(potential_leaders)
-            return self.change_leader(new_leader)
-        elif self.creatures and self.leader not in self.creatures:
-            # If the current leader is not in the organization, choose a new leader from existing members
-            new_leader = random.choice(self.creatures)
-            return self.change_leader(new_leader)
-        return False
-
-    def add_structure(self, structure: 'Structure') -> None:
-        if structure not in self.structures:
-            self.structures.append(structure)
-            if not self.meeting_place:
-                self.meeting_place = structure
-
-    def remove_structure(self, structure: 'Structure') -> None:
-        if structure in self.structures:
-            self.structures.remove(structure)
-            if self.meeting_place == structure:
-                self.meeting_place = self.structures[0] if self.structures else None
-
     def is_valid(self) -> bool:
-        return len(self.creatures) >= 2 and len(self.structures) >= 1 and (self.leader is None or self.leader in self.creatures)
+        return len(self.creatures) >= 2 and self.meeting_place is not None
 
-    def update(self) -> None:
-        self.days_existed += 1
-        self.leader_days_in_charge += 1
+    def choose_new_leader(self, relationship_tracker) -> bool:
+        if len(self.creatures) < 2:
+            return False
+
+        candidates = [c for c in self.creatures if c != self.leader]
+        votes = {candidate: 0 for candidate in candidates}
+
+        for voter in self.creatures:
+            vote_probabilities = [
+                (candidate, relationship_tracker.get_vote_probability(voter, candidate))
+                for candidate in candidates
+            ]
+            total_probability = sum(prob for _, prob in vote_probabilities)
+            
+            if total_probability > 0:
+                random_value = random.random() * total_probability
+                cumulative_probability = 0
+                for candidate, probability in vote_probabilities:
+                    cumulative_probability += probability
+                    if random_value <= cumulative_probability:
+                        votes[candidate] += 1
+                        break
+
+        new_leader = max(votes, key=votes.get)
+        if new_leader != self.leader:
+            self.leader = new_leader
+            self.leader_days_in_charge = 0
+            return True
+        return False
 
     def __str__(self) -> str:
         leader_name = self.leader.name if self.leader else "None"

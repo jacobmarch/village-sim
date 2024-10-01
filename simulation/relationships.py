@@ -20,3 +20,8 @@ class RelationshipTracker:
         print("\nCreature Relationships:")
         for (name1, name2), score in self.relationships.items():
             print(f"  {name1} - {name2}: {score}")
+
+    def get_vote_probability(self, voter, candidate):
+        relationship = self.get_relationship(voter, candidate)
+        # Convert relationship score (-100 to 100) to probability (0 to 1)
+        return (relationship + 100) / 200

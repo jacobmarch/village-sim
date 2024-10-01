@@ -104,13 +104,11 @@ class Simulation:
                     print(f"{creature.name} left {org_to_leave.name}")
                 elif action == "change_leader" and creature.leading_organization:
                     org = creature.leading_organization
-                    if org.choose_new_leader():
-                        if org.leader:
-                            print(f"{org.leader.name} became the new leader of {org.name}")
-                        else:
-                            print(f"Leadership of {org.name} is currently vacant")
+                    old_leader = org.leader
+                    if org.choose_new_leader(self.relationship_tracker):
+                        print(f"{org.leader.name} became the new leader of {org.name}")
                     else:
-                        print(f"No suitable new leader found for {org.name}")
+                        print(f"No change in leadership for {org.name}")
 
         # Check for and remove invalid organizations
         self.organizations = [org for org in self.organizations if org.is_valid()]
@@ -126,8 +124,12 @@ class Simulation:
         print("Organizations:")
         for organization in self.organizations:
             print(f"  - {organization}")
+            # Display Leader Information
             print(f"    Leader: {organization.leader.name if organization.leader else 'None'} (Days in charge: {organization.leader_days_in_charge})")
-            print(f"    Members: {', '.join(creature.name for creature in organization.creatures)}")
+            # Display Members
+            members = ', '.join(creature.name for creature in organization.creatures if isinstance(creature, Creature))
+            print(f"    Members: {members}")
+            # Display Meeting Place
             print(f"    Meeting Place: {organization.meeting_place.name if organization.meeting_place else 'None'}")
         # Print relationships
         self.relationship_tracker.print_relationships()

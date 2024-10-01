@@ -26,7 +26,7 @@ class Simulation:
         ])
         
         # Create initial organization
-        initial_org = self.creatures[0].create_organization("Village Council", self.creatures[1], self.structures[0])
+        initial_org = self.creatures[0].create_organization("Village Council", [self.creatures[1]], self.structures[0])
         self.organizations.append(initial_org)
 
     def run(self):
@@ -104,7 +104,6 @@ class Simulation:
                     print(f"{creature.name} left {org_to_leave.name}")
                 elif action == "change_leader" and creature.leading_organization:
                     org = creature.leading_organization
-                    old_leader = org.leader
                     if org.choose_new_leader(self.relationship_tracker):
                         print(f"{org.leader.name} became the new leader of {org.name}")
                     else:

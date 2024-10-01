@@ -45,13 +45,14 @@ class Creature:
             self.leading_organization = None
             organization.leader = None
 
-    def create_organization(self, name: str, other_member: 'Creature', structure: 'Structure') -> 'Organization':
+    def create_organization(self, name: str, other_members: List['Creature'], structure: 'Structure') -> 'Organization':
         from .organization import Organization
         if not self.leading_organization:
-            new_org = Organization(name, self, [other_member], [structure])
+            new_org = Organization(name, self, other_members, [structure])
             self.join_organization(new_org)
             self.start_leading_organization(new_org)
-            other_member.join_organization(new_org)
+            for member in other_members:
+                member.join_organization(new_org)
             return new_org
         return None
 

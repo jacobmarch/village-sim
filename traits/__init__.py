@@ -1,3 +1,3 @@
-from .traits import Trait
+from .traits import Trait, BooleanTrait
 
-__all__ = ['Trait']
+__all__ = ['Trait', 'BooleanTrait']

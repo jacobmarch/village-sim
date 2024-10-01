@@ -1,21 +1,23 @@
 from entity_types import Creature, Structure, Organization
 from typing import List
 import random
+from simulation.relationships import RelationshipTracker
 
 class Simulation:
     def __init__(self):
         self.creatures: List[Creature] = []
         self.structures: List[Structure] = []
         self.organizations: List[Organization] = []
+        self.relationship_tracker = RelationshipTracker()
         self.setup_entities()
 
     def setup_entities(self):
         # Create some initial entities
         self.creatures.extend([
-            Creature("Alice"),
-            Creature("Bob"),
-            Creature("Charlie"),
-            Creature("Diana")
+            Creature("Alice", "Human"),
+            Creature("Bob", "Human"),
+            Creature("Charlie", "Human"),
+            Creature("Diana", "Human")
         ])
         self.structures.extend([
             Structure("House"),
@@ -48,11 +50,31 @@ class Simulation:
         for organization in self.organizations:
             organization.update()
         
+        # Creature interactions
+        self.creature_interactions()
+        
         # Update and manage organizations
         self.manage_organizations()
         
         # Print current state
         self.print_state()
+
+    def creature_interactions(self):
+        for _ in range(len(self.creatures) // 2):  # Each creature interacts once on average
+            creature1, creature2 = random.sample(self.creatures, 2)
+            interaction_type = random.choice(["positive", "neutral", "negative"])
+            
+            if interaction_type == "positive":
+                change = random.randint(1, 10)
+                print(f"{creature1.name} and {creature2.name} had a positive interaction!")
+            elif interaction_type == "neutral":
+                change = 0
+                print(f"{creature1.name} and {creature2.name} had a neutral interaction.")
+            else:  # negative
+                change = random.randint(-10, -1)
+                print(f"{creature1.name} and {creature2.name} had a negative interaction.")
+            
+            self.relationship_tracker.update_relationship(creature1, creature2, change)
 
     def manage_organizations(self):
         # Randomly create, join, leave organizations, or change leadership
@@ -107,4 +129,6 @@ class Simulation:
             print(f"    Leader: {organization.leader.name if organization.leader else 'None'} (Days in charge: {organization.leader_days_in_charge})")
             print(f"    Members: {', '.join(creature.name for creature in organization.creatures)}")
             print(f"    Meeting Place: {organization.meeting_place.name if organization.meeting_place else 'None'}")
+        # Print relationships
+        self.relationship_tracker.print_relationships()
         print()

@@ -10,3 +10,15 @@ class Trait:
 
     def __str__(self) -> str:
         return f"{self.name}: {self.value:.1f}"
+
+class BooleanTrait(Trait):
+    def __init__(self, name: str, value: bool) -> None:
+        super().__init__(name, float(value), 0, 1)
+
+    def update(self, value: bool) -> None:
+        super().update(float(value))
+
+    def __str__(self) -> str:
+        return f"{self.name}: {bool(self.value)}"
+
+# Add more specific trait classes as needed

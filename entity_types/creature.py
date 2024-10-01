@@ -1,5 +1,5 @@
 from typing import Dict, List, Optional, TYPE_CHECKING
-from traits import Trait
+from traits import Trait, BooleanTrait
 from actions import Action, Eat, Sleep, Work
 import random
 
@@ -8,11 +8,17 @@ if TYPE_CHECKING:
     from .structure import Structure
 
 class Creature:
-    def __init__(self, name: str) -> None:
+    def __init__(self, name: str, race: str) -> None:
         self.name = name
+        self.race = race
         self.traits: Dict[str, Trait] = {
             "hunger": Trait("Hunger", 0),
             "energy": Trait("Energy", 100),
+            "sentient": BooleanTrait("Sentient", True),
+            "intelligence": Trait("Intelligence", 50, 0, 100),
+            "strength": Trait("Strength", 50, 0, 100),
+            "agility": Trait("Agility", 50, 0, 100),
+            "charisma": Trait("Charisma", 50, 0, 100),
         }
         self.actions: List[Action] = [Eat(), Sleep(), Work()]
         self.organizations: List['Organization'] = []
@@ -62,4 +68,4 @@ class Creature:
         traits_str = ", ".join(str(trait) for trait in self.traits.values())
         orgs_str = ", ".join(org.name for org in self.organizations)
         leader_str = f"Leading: {self.leading_organization.name}" if self.leading_organization else "Not leading any organization"
-        return f"Creature: {self.name} ({traits_str}) [Organizations: {orgs_str}] [{leader_str}]"
+        return f"Creature: {self.name} ({self.race}) [{traits_str}] [Organizations: {orgs_str}] [{leader_str}]"
